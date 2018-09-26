@@ -9,5 +9,5 @@ def response_to_dict(response):
         'status': response.status,
         'url': response.url,
         'headers': response.headers.to_unicode_dict(),
-        'body': response.body,
+        'body': response.text,
     }
