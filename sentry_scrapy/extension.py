@@ -18,6 +18,8 @@ class SentryExtension:
         extension = cls()
         crawler.signals.connect(extension.spider_error, signal=signals.spider_error)
 
+        return extension
+
     @staticmethod
     def spider_error(failure, response, spider):
         """

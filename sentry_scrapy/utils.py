@@ -8,6 +8,6 @@ def response_to_dict(response):
     return {
         'status': response.status,
         'url': response.url,
-        'headers': dict(response.headers),
+        'headers': response.headers.to_unicode_dict(),
         'body': response.body,
     }
