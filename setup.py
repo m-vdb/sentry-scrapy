@@ -3,13 +3,17 @@
 from setuptools import setup, find_packages
 
 
-VERSION = '0.1'
+VERSION = '0.2'
 
+with open('README.md') as readme:
+    long_description = readme.read()
 
 setup(
     name='sentry-scrapy',
     version=VERSION,
     description='Scrapy integration with Sentry SDK (unofficial)',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Maxime Vdb',
     author_email='me@maxvdb.com',
     packages=find_packages(),
