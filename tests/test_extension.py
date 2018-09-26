@@ -2,14 +2,16 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from scrapy import signals
-from scrapy.http import Response
+from scrapy.http import TextResponse
+from twisted.python.failure import Failure
 
 from sentry_scrapy.extension import SentryExtension
 
 
 class SentryExtensionTestCase(unittest.TestCase):
 
-    def test_from_crawler(self):
+    @patch('sentry_scrapy.extension.ignore_logger')
+    def test_from_crawler(self, ignore_logger):
         crawler = MagicMock()
         extension = SentryExtension.from_crawler(crawler)
         self.assertIsInstance(extension, SentryExtension)
@@ -17,18 +19,20 @@ class SentryExtensionTestCase(unittest.TestCase):
             extension.spider_error,
             signal=signals.spider_error
         )
+        ignore_logger.assert_called_with('scrapy.core.scraper')
 
     @patch('sentry_scrapy.extension.capture_exception')
     @patch('sentry_sdk.scope.Scope.set_tag')
     @patch('sentry_sdk.scope.Scope.set_extra')
     def test_spider_error(self, scope_set_extra, scope_set_tag, capture_exception):
-        resp = Response(
+        resp = TextResponse(
             'https://url.com',
             status=201,
             headers={'Content-type': 'text/html'},
             body=b'<!doctype><html><body><p>test</p></body></html>'
         )
-        failure = Exception('Boom')
+        error = Exception('Boom')
+        failure = Failure(error)
         spider = MagicMock()
         spider.name = 'superspider'
         SentryExtension.spider_error(failure, resp, spider)
@@ -38,6 +42,6 @@ class SentryExtensionTestCase(unittest.TestCase):
             'status': 201,
             'url': 'https://url.com',
             'headers': {'content-type': 'text/html'},
-            'body': b'<!doctype><html><body><p>test</p></body></html>',
+            'body': '<!doctype><html><body><p>test</p></body></html>',
         })
-        capture_exception.assert_called_with(failure)
+        capture_exception.assert_called_with(error)
